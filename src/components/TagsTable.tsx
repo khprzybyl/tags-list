@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { fetchTags } from '../services/api';
+import React from 'react';
 import {
   Table,
   TableBody,
@@ -15,6 +14,8 @@ import {
   MenuItem,
 } from '@mui/material';
 import { SelectChangeEvent } from '@mui/material/Select';
+import { useTagsContext } from '../context/TagContext';
+import { useTags } from '../hooks/useTagsQuery';
 
 interface Tag {
   name: string;
@@ -22,32 +23,14 @@ interface Tag {
 }
 
 export const TagsTable = () => {
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [sort, setSort] = useState('popular'); // Domyślne sortowanie
+  const { page, setPage, rowsPerPage, setRowsPerPage, sort, setSort } =
+    useTagsContext();
+  const { isLoading, error, data } = useTags();
 
-  useEffect(() => {
-    const getTags = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchTags(page + 1, rowsPerPage, 'desc', sort);
-        setTags(data.items);
-      } catch (error) {
-        setError('Failed to fetch tags');
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  if (isLoading) return <p>Loading...</p>;
+  if (error instanceof Error) return <p>Error: {error.message}</p>;
 
-    getTags();
-  }, [page, rowsPerPage, sort]);
-
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  const tags = data?.items || [];
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
@@ -100,7 +83,7 @@ export const TagsTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tags.map((tag) => (
+            {tags.map((tag: Tag) => (
               <TableRow
                 key={tag.name}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
