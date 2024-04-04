@@ -9,7 +9,12 @@ import {
   TableRow,
   Paper,
   TablePagination,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from '@mui/material';
+import { SelectChangeEvent } from '@mui/material/Select';
 
 interface Tag {
   name: string;
@@ -22,12 +27,13 @@ export const TagsTable = () => {
   const [error, setError] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [sort, setSort] = useState('popular'); // Domyślne sortowanie
 
   useEffect(() => {
     const getTags = async () => {
       setLoading(true);
       try {
-        const data = await fetchTags(page + 1, rowsPerPage); 
+        const data = await fetchTags(page + 1, rowsPerPage, 'desc', sort);
         setTags(data.items);
       } catch (error) {
         setError('Failed to fetch tags');
@@ -38,13 +44,17 @@ export const TagsTable = () => {
     };
 
     getTags();
-  }, [page, rowsPerPage]);
+  }, [page, rowsPerPage, sort]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
 
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
+  };
+
+  const handleChangeSort = (event: SelectChangeEvent) => {
+    setSort(event.target.value as string);
   };
 
   const handleChangeRowsPerPage = (
@@ -55,7 +65,24 @@ export const TagsTable = () => {
   };
 
   return (
-    <div className="mb-16">
+    <div className="mb-16 mt-12">
+      <FormControl
+        variant="outlined"
+        style={{ minWidth: 120, marginBottom: '20px' }}
+      >
+        <InputLabel id="sort-label">Sort By</InputLabel>
+        <Select
+          labelId="sort-label"
+          id="sort"
+          value={sort}
+          onChange={handleChangeSort}
+          label="Sort By"
+        >
+          <MenuItem value="popular">Popular</MenuItem>
+          <MenuItem value="activity">Activity</MenuItem>
+          <MenuItem value="name">Name</MenuItem>
+        </Select>
+      </FormControl>
       <TablePagination
         component="div"
         count={-1}

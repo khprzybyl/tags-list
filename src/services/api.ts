@@ -7,6 +7,7 @@ export const fetchTags = async (
   sort = 'popular'
 ) => {
   const url = `${BASE_URL}?page=${page}&pagesize=${pageSize}&order=${order}&sort=${sort}&site=stackoverflow`;
+
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Network response was not ok');
